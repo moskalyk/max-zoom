@@ -35,45 +35,49 @@
     const fields = [fieldA, fieldB, fieldC]
     const wait = (ms) => new Promise((res) => setTimeout(res,ms))
     
-    let starting = 800
-    
-    for(let i = 0; i < 3; i++){
-        const decField = fields[i].prob * 100 * fields[i].max
+    let findWorkingSchedule = (fields) => {
+        let timings = []
+        let starting = 800
+        
+        for(let i = 0; i < 3; i++){
+            const decField = fields[i].prob * 100 * fields[i].max
 
-        if(decField > 50) {
-            
-            const quantized = decField * 1;
-            const y = Math.abs(0.000001 * (quantized) ** 2) * 32
-            const acceptedWork = (y/ 100)
-            
-            let runner = true
-            working.push({demand: fields[i].max, revenue:acceptedWork})
+            if(decField > 50) {
+                
+                const quantized = decField * 1;
+                const y = Math.abs(0.000001 * (quantized) ** 2) * 32
+                const acceptedWork = (y/ 100)
+                
+                let runner = true
+                working.push({demand: fields[i].max, revenue:acceptedWork})
 
-            while(runner){
-                runner = false
-                const w = working[0]
-                for(let k = 0; k < working.length; k++){
-                    const w = working[k]
-                    
-                    if(working[k+1] && w.demand < working[k+1].demand){
-                        runner = true
-                        const temp = w   
-                        working[k] = working[k+1]
-                        working[k+1] = temp
-                        console.log('notify time')
-                    } 
+                while(runner){
+                    runner = false
+                    const w = working[0]
+                    for(let k = 0; k < working.length; k++){
+                        const w = working[k]
+                        
+                        if(working[k+1] && w.demand < working[k+1].demand){
+                            runner = true
+                            const temp = w   
+                            working[k] = working[k+1]
+                            working[k+1] = temp
+                            console.log('notify customer in band')
+                        } 
+                    }
                 }
+                
+                const time = [starting, starting + fields[i].prob*60]
+                
+                if(working.length > 0) {
+                    starting = starting + fields[i].prob *60
+                }
+                timings.push(time)
             }
-            
-            const time = [starting, starting + fields[i].prob*60]
-            
-            if(working.length > 0) {
-                starting = starting + fields[i].prob *60
-            }
-            
-            console.log('time', time)
         }
+        
+        return {pay: working, timings: timings}
     }
-    
-    console.log(working)
+
+    console.log(findWorkingSchedule(fields, working))
 })()
